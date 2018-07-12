@@ -7,6 +7,7 @@ class Character(object):
         self.y = random.randint(0, 480)
         self.speed = 0
         self.duration = 0
+        self.alive = True
 
     def move_north(self):
         self.y -= self.speed
@@ -116,6 +117,7 @@ class Hero(Character):
         self.y = 240
         self.alive = True
         self.speed = 1
+        self.sword_upgrade = False
 
     def move_north(self):
         if self.y > 25:
@@ -157,6 +159,26 @@ class Goblin(Character):
         self.speed = 5
         self.duration = 1
 
+class Sword(object):
+    def __init__(self):
+        self.x = random.randint(50, 460)
+        self.y = random.randint(50, 430)
+        self.available = True
+        self.alive = True
+
+    def alive_test(self, attacker):
+        if (attacker.x + 32) < self.x:
+            return self.available
+        elif (self.x + 32) < attacker.x:
+            return self.available
+        elif (attacker.y + 32) < self.y:
+            return self.available
+        elif (self.y + 32) < attacker.y:
+            return self.available
+        else:
+            self.available = False
+            return self.available
+
 def next_level(level_number):
     pressed = pygame.key.get_pressed()
     if pressed[pygame.K_RETURN]:
@@ -184,6 +206,7 @@ def game(level):
     hero_image = pygame.image.load('images/hero.png').convert_alpha()
     monster_image = pygame.image.load('images/monster.png').convert_alpha()
     goblin_image = pygame.image.load('images/goblin.png').convert_alpha()
+    sword_image = pygame.image.load('images/sword_small.png').convert_alpha()
     sound = pygame.mixer.Sound('sounds/win.wav')
     sound_lost = pygame.mixer.Sound('sounds/lose.wav')
     music = pygame.mixer.music.load('sounds/music.wav')
@@ -195,6 +218,7 @@ def game(level):
 
     knight = Hero()
     orc = Monster()
+    sword = Sword()
     goblin_number = current_level + 2
     character_list = [orc]
     goblin_list = []
@@ -205,7 +229,10 @@ def game(level):
         goblin_list.append(goblin_1)
 
     change_dir_countdown = 5
+    sword_counter = 600
+    sword_upgrade_counter = 300
     sound_counter = 1
+
     stop_game = False
     while not stop_game:
         for event in pygame.event.get():
@@ -232,26 +259,54 @@ def game(level):
         screen.blit(background_image, (0, 0))
         screen.blit(level_display, (30, 30))
 
-        for i in range(len(goblin_list)):
-            screen.blit(goblin_image, (goblin_list[i].x, goblin_list[i].y))
-        if orc.alive_test(knight) == True:
-            screen.blit(monster_image, (orc.x, orc.y))
-        elif orc.alive_test(knight) == False:
-            while sound_counter > 0:
-                sound.play()
-                sound_counter -= 1
-            screen.blit(text, (160, 230))
-            next_level(current_level)
-        
-        for goblin in goblin_list:
-            if knight.alive_test(goblin) == True:
+        if sword.available == True:
+            sword_counter -= 1
+            if 0 <= sword_counter <= 300:
+                if sword.alive_test(knight) == True:
+                    screen.blit(sword_image, (sword.x, sword.y))
+                elif sword.alive_test(knight) == False:
+                        knight.sword_upgrade = True
+            if sword_counter < 0:
+                sword.available = False
+
+        if knight.sword_upgrade == True:
+            sword_display = font.render('Sword Upgrade Timer: ' + str((sword_upgrade_counter / 60) +1), True, (255, 0, 0))
+            screen.blit(hero_image, (knight.x, knight.y))
+            if sword_upgrade_counter > 0:
+                screen.blit(sword_display, (285, 30))
+                if orc.alive_test(knight) == True:
+                    screen.blit(monster_image, (orc.x, orc.y))
+                elif orc.alive_test(knight) == False:
+                    sound.play()
+                    screen.blit(text, (160, 230))
+                    next_level(current_level)
+                for goblin in goblin_list:
+                    if goblin.alive_test(knight) == False:
+                       goblin_list.remove(goblin)
+                for i in range(len(goblin_list)):
+                    screen.blit(goblin_image, (goblin_list[i].x, goblin_list[i].y))
+            if sword_upgrade_counter <= 0:
+                knight.sword_upgrade = False
                 screen.blit(hero_image, (knight.x, knight.y))
-            elif knight.alive_test(goblin) == False:
-                while sound_counter > 0:
+            sword_upgrade_counter -= 1
+
+        if knight.sword_upgrade == False:
+            for k in range(len(goblin_list)):
+                screen.blit(goblin_image, (goblin_list[k].x, goblin_list[k].y))
+            if orc.alive_test(knight) == True:
+                screen.blit(monster_image, (orc.x, orc.y))
+            elif orc.alive_test(knight) == False:
+                sound.play()
+                screen.blit(text, (160, 230))
+                next_level(current_level)
+
+            for goblin in goblin_list:
+                if knight.alive_test(goblin) == True:
+                    screen.blit(hero_image, (knight.x, knight.y))
+                elif knight.alive_test(goblin) == False:
                     sound_lost.play()
-                    sound_counter -= 1
-                screen.blit(text_lost, (130, 230))
-                restart()
+                    screen.blit(text_lost, (130, 230))
+                    restart()
         
         pygame.display.update()
         clock.tick(60)
