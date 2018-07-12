@@ -207,19 +207,23 @@ def game(level):
     monster_image = pygame.image.load('images/monster.png').convert_alpha()
     goblin_image = pygame.image.load('images/goblin.png').convert_alpha()
     sword_image = pygame.image.load('images/sword_small.png').convert_alpha()
+
     sound = pygame.mixer.Sound('sounds/win.wav')
     sound_lost = pygame.mixer.Sound('sounds/lose.wav')
     music = pygame.mixer.music.load('sounds/music.wav')
     pygame.mixer.music.play(-1)
+    
     font = pygame.font.Font(None, 25)
-    text = font.render('Hit ENTER to play again!', True, (255, 0, 0))
+    text = font.render('Hit ENTER to go to the next level!', True, (255, 0, 0))
     text_lost = font.render('You lose! Hit ENTER to play again.', True, (255, 0, 0))
     level_display = font.render('Current Level: ' + str(current_level), True, (255, 0, 0))
 
     knight = Hero()
     orc = Monster()
     sword = Sword()
+    
     goblin_number = current_level + 2
+    
     character_list = [orc]
     goblin_list = []
 
@@ -297,7 +301,7 @@ def game(level):
                 screen.blit(monster_image, (orc.x, orc.y))
             elif orc.alive_test(knight) == False:
                 sound.play()
-                screen.blit(text, (160, 230))
+                screen.blit(text, (120, 230))
                 next_level(current_level)
 
             for goblin in goblin_list:
@@ -316,5 +320,5 @@ def game(level):
 def main():
     game(1)
 
-if __name__ == '__main__':
-    main()
+
+main()
