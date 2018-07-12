@@ -4,11 +4,7 @@ import random
 class Character(object):
     def __init__(self):
         self.x = random.randint(0, 510)
-        if 255 <= self.x <= 287:
-            self.x = random.randint(0, 510)
         self.y = random.randint(0, 480)
-        if 240 <= self.x <= 272:
-            self.y = random.randint(0, 480)
         self.speed = 0
         self.duration = 0
 
