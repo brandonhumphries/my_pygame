@@ -160,8 +160,6 @@ class Goblin(Character):
         super(Goblin, self).__init__()
         self.speed = 5
         self.duration = 1
-# def victory():
-#     if orc.dead == True:
 
 def next_level(level_number):
     pressed = pygame.key.get_pressed()
@@ -224,7 +222,6 @@ def game(level):
 
         # Game logic
         change_dir_countdown -= 1
-        # move_countdown -= 1
         if change_dir_countdown == 0:
             change_dir_countdown = 5
             for character in character_list:
@@ -260,7 +257,6 @@ def game(level):
                 screen.blit(text_lost, (130, 230))
                 restart()
         
-        #screen.blit(monster_image, (orc.x, orc.y))
         pygame.display.update()
         clock.tick(60)
 
